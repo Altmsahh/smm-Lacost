@@ -1,0 +1,56 @@
+{
+  "app": {
+    "title": "SMM Paneli",
+    "description": "Sosyal Medya Pazarlama Paneli"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "services": "Hizmetler",
+    "orders": "Siparişler",
+    "addFunds": "Bakiye Yükle",
+    "support": "Destek",
+    "api": "API",
+    "login": "Giriş Yap",
+    "register": "Kayıt Ol",
+    "logout": "Çıkış Yap"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "retry": "Tekrar Dene",
+    "submit": "Gönder",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "search": "Ara",
+    "noResults": "Sonuç bulunamadı",
+    "back": "Geri"
+  },
+  "auth": {
+    "loginTitle": "Tekrar Hoş Geldiniz",
+    "loginSubtitle": "Hesabınıza giriş yapın",
+    "registerTitle": "Hesap Oluştur",
+    "registerSubtitle": "SMM Panelinize başlayın",
+    "email": "E-posta",
+    "password": "Şifre",
+    "confirmPassword": "Şifre Onayı",
+    "username": "Kullanıcı Adı",
+    "rememberMe": "Beni hatırla",
+    "forgotPassword": "Şifremi unuttum?",
+    "noAccount": "Hesabınız yok mu?",
+    "hasAccount": "Zaten hesabınız var mı?",
+    "signingIn": "Giriş yapılıyor...",
+    "creatingAccount": "Hesap oluşturuluyor...",
+    "loginSuccess": "Başarıyla giriş yapıldı",
+    "registerSuccess": "Hesap başarıyla oluşturuldu",
+    "invalidCredentials": "Geçersiz e-posta veya şifre"
+  },
+  "dashboard": {
+    "title": "Kontrol Paneli",
+    "balance": "Bakiye",
+    "totalOrders": "Toplam Sipariş",
+    "pendingOrders": "Bekleyen Siparişler",
+    "completedOrders": "Tamamlanan Siparişler"
+  }
+}

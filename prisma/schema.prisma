@@ -1,0 +1,153 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  suspended
+  banned
+}
+
+enum OrderStatus {
+  pending
+  in_progress
+  completed
+  partial
+  cancelled
+  refunded
+}
+
+enum TransactionType {
+  deposit
+  purchase
+  refund
+  bonus
+}
+
+enum TicketStatus {
+  open
+  answered
+  closed
+}
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique
+  email        String        @unique
+  password     String
+  balance      Float         @default(0.0)
+  role         Role          @default(user)
+  status       UserStatus    @default(active)
+  apiKey       String?       @unique
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  orders       Order[]
+  transactions Transaction[]
+  tickets      Ticket[]
+}
+
+model Provider {
+  id          Int       @id @default(autoincrement())
+  name        String
+  url         String
+  apiKey      String
+  username    String?
+  balance     Float     @default(0.0)
+  currency    String    @default("USD")
+  status      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+}
+
+model ServiceCategory {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  sortOrder Int       @default(0)
+  services  Service[]
+}
+
+model Service {
+  id                Int             @id @default(autoincrement())
+  categoryId        Int
+  category          ServiceCategory @relation(fields: [categoryId], references: [id])
+  providerId        Int?
+  provider          Provider?       @relation(fields: [providerId], references: [id], onDelete: SetNull)
+  providerServiceId Int?
+  originalRate      Float?
+  name              String
+  description       String?
+  rate              Float
+  minQuantity       Int             @default(10)
+  maxQuantity       Int             @default(100000)
+  type              String          @default("default")
+  isActive          Boolean         @default(true)
+  orders            Order[]
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceId       Int
+  service         Service     @relation(fields: [serviceId], references: [id])
+  serviceName     String
+  link            String
+  quantity        Int
+  charge          Float
+  startCount      Int?        @default(0)
+  remains         Int?        @default(0)
+  status          OrderStatus @default(pending)
+  providerOrderId String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Transaction {
+  id            Int             @id @default(autoincrement())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          TransactionType
+  amount        Float
+  balanceBefore Float
+  balanceAfter  Float
+  description   String
+  createdAt     DateTime        @default(now())
+}
+
+model Ticket {
+  id        Int             @id @default(autoincrement())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  status    TicketStatus    @default(open)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  messages  TicketMessage[]
+}
+
+model TicketMessage {
+  id        Int      @id @default(autoincrement())
+  ticketId  Int
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  body      String
+  isStaff   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
