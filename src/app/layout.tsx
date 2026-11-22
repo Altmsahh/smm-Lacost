@@ -15,26 +15,50 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "SMM Lacost",
+  title: {
+    default: "SMM Lacost | أفضل سيرفر خدمات سوشيال ميديا",
+    template: "%s | SMM Lacost",
+  },
   description:
-    "Premium social media marketing panel offering the fastest and most affordable SMM services for facebook, Instagram, YouTube, TikTok, Twitter, and more.",
+    "سيرفر SMM Lacost لخدمات وسائل التواصل الاجتماعي (تيك توك، فيسبوك، انستغرام، يوتيوب، تليجرام). أرخص الأسعار وتنفيذ فوري 24/7.",
   keywords: [
     "SMM Lacost",
+    "سيرفر لاكوست",
+    "خدمات سوشيال ميديا",
     "social media marketing",
-    "buy followers",
-    "buy likes",
-    "buy comments",
+    "تزويد متابعين",
+    "لايكات",
+    "مشاهدات",
     "Instagram",
     "YouTube",
     "TikTok",
   ],
   icons: {
     icon: [
-      { url: "/logo-new.png" },
-      { url: "/favicon.ico" },
+      { url: "/logo-new.png", sizes: "512x512", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
     ],
-    apple: "/logo-new.png",
+    apple: [
+      { url: "/logo-new.png", sizes: "512x512", type: "image/png" },
+    ],
     shortcut: "/logo-new.png",
+  },
+  openGraph: {
+    title: "SMM Lacost | أفضل سيرفر خدمات سوشيال ميديا",
+    description: "سيرفر SMM Lacost الأسرع والأفضل لخدمات وسائل التواصل الاجتماعي وتنفيذ فوري 24/7.",
+    url: "https://smm-lacost.vercel.app",
+    siteName: "SMM Lacost",
+    images: [
+      {
+        url: "/logo-new.png",
+        width: 512,
+        height: 512,
+        alt: "SMM Lacost Logo",
+      },
+    ],
+    locale: "ar_EG",
+    type: "website",
   },
 };
 

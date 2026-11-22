@@ -42,12 +42,12 @@ export default function DashboardSidebar() {
       <div className="p-5 border-b border-zinc-800/80 bg-zinc-950/80">
         <Link href="/home" className="flex items-center gap-3 group">
           <div className="relative size-11 rounded-[16px] p-0.5 border border-emerald-500/30 bg-gradient-to-br from-zinc-800 to-zinc-950 shadow-lg shadow-black/50 ring-1 ring-[#00df82]/20 group-hover:border-[#00df82] group-hover:ring-[#00df82]/50 group-hover:shadow-[0_0_20px_rgba(0,223,130,0.35)] group-hover:scale-105 transition-all duration-300">
-            <div className="relative w-full h-full rounded-[13px] overflow-hidden">
+            <div className="relative w-full h-full rounded-[13px] overflow-hidden flex items-center justify-center">
               <Image
                 src="/logo-new.png"
                 alt="SMM Lacost Logo"
                 fill
-                className="object-cover"
+                className="object-contain p-0.5"
                 priority
               />
             </div>

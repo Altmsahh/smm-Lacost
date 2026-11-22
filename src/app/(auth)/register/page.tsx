@@ -8,12 +8,12 @@ function RegisterPage() {
       <div className="mx-auto w-full max-w-md rounded-3xl border border-zinc-800 bg-zinc-950 p-6 sm:p-10 shadow-2xl">
         <div className="flex flex-col items-center justify-center gap-3 mb-6">
           <div className="relative size-20 rounded-[22px] p-1 border border-zinc-700/80 bg-gradient-to-br from-zinc-800 to-zinc-950 shadow-2xl ring-1 ring-white/10">
-            <div className="relative w-full h-full rounded-[18px] overflow-hidden">
+            <div className="relative w-full h-full rounded-[18px] overflow-hidden flex items-center justify-center">
               <Image
                 src="/logo-new.png"
                 alt="SMM Lacost Logo"
                 fill
-                className="object-cover"
+                className="object-contain p-1"
                 priority
               />
             </div>
