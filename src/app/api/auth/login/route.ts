@@ -124,12 +124,13 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Login error:", error);
+    const msg = error?.message || "حدث خطأ أثناء تسجيل الدخول";
     return NextResponse.json(
       {
         success: false,
-        message: "Something went wrong during login",
+        message: msg,
       },
       { status: 500 }
     );

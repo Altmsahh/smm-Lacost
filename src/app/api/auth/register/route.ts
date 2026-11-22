@@ -24,6 +24,30 @@ async function findExistingUserWithRetry(email: string, username: string, retrie
   }
 }
 
+// Helper to create user with retry
+async function createUserWithRetry(data: any, retries = 2) {
+  try {
+    return await prisma.user.create({
+      data,
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        balance: true,
+        role: true,
+        status: true,
+        createdAt: true,
+      },
+    });
+  } catch (err: any) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 1200));
+      return createUserWithRetry(data, retries - 1);
+    }
+    throw err;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -63,25 +87,14 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user in PostgreSQL
-    const newUser = await prisma.user.create({
-      data: {
-        username: username.toLowerCase().trim(),
-        email: email.toLowerCase().trim(),
-        password: hashedPassword,
-        balance: 0.0,
-        role: "user",
-        status: "active",
-      },
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        balance: true,
-        role: true,
-        status: true,
-        createdAt: true,
-      },
+    // Create user in PostgreSQL with auto-retry
+    const newUser = await createUserWithRetry({
+      username: cleanUsername,
+      email: cleanEmail,
+      password: hashedPassword,
+      balance: 0.0,
+      role: "user",
+      status: "active",
     });
 
     // Generate JWT
@@ -123,12 +136,13 @@ export async function POST(req: Request) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Registration error:", error);
+    const msg = error?.message || "حدث خطأ أثناء إنشاء الحساب";
     return NextResponse.json(
       {
         success: false,
-        message: "Something went wrong during registration",
+        message: msg,
       },
       { status: 500 }
     );
