@@ -32,7 +32,15 @@ interface ServerStats {
 }
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("auth_user");
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+    return null;
+  });
   const [stats, setStats] = useState<ServerStats>({
     totalServerOrders: 0,
     totalServices: 0,
@@ -44,6 +52,8 @@ export default function HomePage() {
   });
   const [loadingStats, setLoadingStats] = useState(true);
   const { formatAmount } = useCurrency();
+
+  const displayName = user?.username || (user?.email ? user.email.split("@")[0] : "");
 
   useEffect(() => {
     const cached = authService.getCurrentUser();
@@ -92,8 +102,14 @@ export default function HomePage() {
                 سيرفر متصل 24/7
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              أهلاً بك{user?.username ? `، ${user.username}` : ""} 👋
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white flex items-center flex-wrap gap-2">
+              <span>أهلاً بك</span>
+              {displayName ? (
+                <span className="text-[#00df82] font-black drop-shadow-[0_0_15px_rgba(0,223,130,0.5)]">
+                  ، {displayName}
+                </span>
+              ) : null}
+              <span>👋</span>
             </h2>
             <p className="mt-2 text-sm text-gray-300 max-w-2xl leading-relaxed">
               تحكم بجميع حملاتك لوسائل التواصل الاجتماعي، راقب تنفيذ الطلبات، واشحن رصيدك بكل سهولة.

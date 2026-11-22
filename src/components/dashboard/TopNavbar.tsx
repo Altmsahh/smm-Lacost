@@ -9,8 +9,17 @@ import type { User } from "@/types";
 import { Wallet, User as UserIcon, LogOut } from "lucide-react";
 
 export default function TopNavbar() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("auth_user");
+        if (raw) return JSON.parse(raw);
+      } catch {}
+    }
+    return null;
+  });
   const { formatAmount } = useCurrency();
+  const displayName = user?.username || (user?.email ? user.email.split("@")[0] : "");
 
   useEffect(() => {
     const cached = authService.getCurrentUser();
@@ -40,10 +49,11 @@ export default function TopNavbar() {
             </div>
           )}
 
-          {user?.username && (
-            <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-400">
-              <UserIcon className="size-3.5 text-gray-500" />
-              <span>مرحباً، <strong className="text-white font-medium">{user.username}</strong></span>
+          {displayName && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-400">
+              <UserIcon className="size-3.5 text-[#00df82]" />
+              <span className="hidden sm:inline">مرحباً،</span>
+              <strong className="text-[#00df82] font-semibold">{displayName}</strong>
             </div>
           )}
         </div>
