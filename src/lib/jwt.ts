@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "smm-lacost-secret-key-123456";
+const JWT_SECRET = process.env.JWT_SECRET || "smm-lacost-super-secret-key-2026";
 
 export interface JwtPayload {
   userId: string;

@@ -1,21 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import axios from "axios";
-
 import { Button } from "@/components/ui/button";
 import { loginSchema, type LoginFormData } from "@/lib/validators";
 import { authService } from "@/services";
 
 const LoginForm = () => {
-  const router = useRouter();
   const tAuth = useTranslations("auth");
   const tNav = useTranslations("nav");
   const [showPassword, setShowPassword] = useState(false);
@@ -40,30 +36,43 @@ const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const res = await authService.login(data);
-      if (res?.token) {
-        localStorage.setItem("auth_token", res.token);
+      // Call login API directly with fetch to avoid any axios wrapping issues
+      const rawRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await rawRes.json();
+
+      if (!rawRes.ok || !json.success) {
+        toast.error(json.message || "فشل تسجيل الدخول");
+        return;
       }
-      if (res?.user) {
-        localStorage.setItem("auth_user", JSON.stringify(res.user));
+
+      const token = json.token || json.data?.token;
+      const user = json.user || json.data?.user;
+
+      if (token) {
+        localStorage.setItem("auth_token", token);
+        // Set cookie manually for middleware
+        const isHttps = window.location.protocol === "https:";
+        const secureAttr = isHttps ? "; Secure" : "";
+        document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+        document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
       }
+      if (user) {
+        localStorage.setItem("auth_user", JSON.stringify(user));
+      }
+
       toast.success(tAuth("loginSuccess") || "تم تسجيل الدخول بنجاح");
-      setTimeout(() => {
-        window.location.href = "/home";
-      }, 300);
+      // Use window.location for full page navigation to ensure cookies/localStorage are available
+      window.location.href = "/home";
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          (error.response?.status === 401
-            ? tAuth("invalidCredentials")
-            : "Failed to connect to authentication server");
-        toast.error(message);
-      } else if (error instanceof Error) {
+      console.error("Login form error:", error);
+      if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error("حدث خطأ غير متوقع. حاول مرة أخرى.");
       }
     }
   };

@@ -1,21 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { toast } from "react-toastify";
 import { User, Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
-import axios from "axios";
-
 import { Button } from "@/components/ui/button";
 import { registerSchema, type RegisterFormData } from "@/lib/validators";
 import { authService } from "@/services";
 
 const RegisterForm = () => {
-  const router = useRouter();
   const tAuth = useTranslations("auth");
   const tNav = useTranslations("nav");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,28 +39,47 @@ const RegisterForm = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      const res = await authService.register(data);
-      if (res?.token) {
-        localStorage.setItem("auth_token", res.token);
+      // Call register API directly with fetch to avoid any axios wrapping issues
+      const rawRes = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        }),
+      });
+      const json = await rawRes.json();
+
+      if (!rawRes.ok || !json.success) {
+        toast.error(json.message || "فشل إنشاء الحساب");
+        return;
       }
-      if (res?.user) {
-        localStorage.setItem("auth_user", JSON.stringify(res.user));
+
+      const token = json.token || json.data?.token;
+      const user = json.user || json.data?.user;
+
+      if (token) {
+        localStorage.setItem("auth_token", token);
+        // Set cookie manually for middleware
+        const isHttps = window.location.protocol === "https:";
+        const secureAttr = isHttps ? "; Secure" : "";
+        document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+        document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
       }
+      if (user) {
+        localStorage.setItem("auth_user", JSON.stringify(user));
+      }
+
       toast.success(tAuth("registerSuccess") || "تم إنشاء الحساب بنجاح");
-      setTimeout(() => {
-        window.location.href = "/home";
-      }, 300);
+      // Use window.location for full page navigation to ensure cookies/localStorage are available
+      window.location.href = "/home";
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          error.response?.data?.message ||
-          error.response?.data?.error ||
-          "Registration failed. Please check your information.";
-        toast.error(message);
-      } else if (error instanceof Error) {
+      console.error("Register form error:", error);
+      if (error instanceof Error) {
         toast.error(error.message);
       } else {
-        toast.error("An unexpected error occurred. Please try again.");
+        toast.error("حدث خطأ غير متوقع. حاول مرة أخرى.");
       }
     }
   };
