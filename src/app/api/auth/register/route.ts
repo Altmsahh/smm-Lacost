@@ -80,6 +80,8 @@ export async function POST(req: Request) {
       {
         success: true,
         message: "Account created successfully",
+        token,
+        user: newUser,
         data: {
           token,
           user: newUser,

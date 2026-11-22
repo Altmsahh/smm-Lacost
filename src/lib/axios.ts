@@ -25,26 +25,10 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor — global error handling
+// Response interceptor — return response or reject error
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      const url = error.config?.url || "";
-      const isAuthEndpoint = url.includes("/auth/login") || url.includes("/auth/register") || url.includes("/auth/me");
-      if (!isAuthEndpoint && typeof window !== "undefined") {
-        const isAuthPage = window.location.pathname === "/login" || window.location.pathname === "/register";
-        if (!isAuthPage) {
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("auth_user");
-          document.cookie = "auth_token=; path=/; max-age=0; SameSite=Lax";
-          document.cookie = "token=; path=/; max-age=0; SameSite=Lax";
-          window.location.href = "/login";
-        }
-      }
-    }
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
 export default apiClient;

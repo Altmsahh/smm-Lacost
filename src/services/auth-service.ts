@@ -3,16 +3,28 @@ import type { ApiResponse, AuthResponse, User } from "@/types";
 import type { LoginFormData, RegisterFormData } from "@/lib/validators";
 
 export const authService = {
-  saveSession(authData: AuthResponse): void {
-    if (authData?.token && typeof window !== "undefined") {
-      localStorage.setItem("auth_token", authData.token);
+  saveSession(authData: any): void {
+    if (!authData || typeof window === "undefined") return;
+    const token =
+      authData.token ||
+      authData.data?.token ||
+      (typeof authData === "string" ? authData : null);
+
+    const user =
+      authData.user ||
+      authData.data?.user ||
+      (authData.id ? authData : null);
+
+    if (token) {
+      localStorage.setItem("auth_token", token);
       const isHttps = window.location.protocol === "https:";
       const secureAttr = isHttps ? "; Secure" : "";
-      document.cookie = `auth_token=${authData.token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
-      document.cookie = `token=${authData.token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
-      if (authData.user) {
-        localStorage.setItem("auth_user", JSON.stringify(authData.user));
-      }
+      document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+      document.cookie = `token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+    }
+
+    if (user) {
+      localStorage.setItem("auth_user", JSON.stringify(user));
     }
   },
 
@@ -26,18 +38,17 @@ export const authService = {
 
   async login(credentials: LoginFormData): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post<ApiResponse<AuthResponse> | AuthResponse>(
+      const response = await apiClient.post<any>(
         "/auth/login",
         credentials
       );
 
       const responseBody = response.data;
-      const authData: AuthResponse =
-        responseBody && typeof responseBody === "object" && "data" in responseBody && (responseBody as ApiResponse<AuthResponse>).data
-          ? (responseBody as ApiResponse<AuthResponse>).data
-          : (responseBody as AuthResponse);
+      const token = responseBody?.token || responseBody?.data?.token;
+      const user = responseBody?.user || responseBody?.data?.user;
+      const authData: AuthResponse = { token, user };
 
-      this.saveSession(authData);
+      this.saveSession(responseBody);
       return authData;
     } catch (error) {
       // In development, if backend server is not running, provide fallback session so user can enter dashboard
@@ -64,18 +75,17 @@ export const authService = {
 
   async register(data: RegisterFormData): Promise<AuthResponse> {
     try {
-      const response = await apiClient.post<ApiResponse<AuthResponse> | AuthResponse>(
+      const response = await apiClient.post<any>(
         "/auth/register",
         data
       );
 
       const responseBody = response.data;
-      const authData: AuthResponse =
-        responseBody && typeof responseBody === "object" && "data" in responseBody && (responseBody as ApiResponse<AuthResponse>).data
-          ? (responseBody as ApiResponse<AuthResponse>).data
-          : (responseBody as AuthResponse);
+      const token = responseBody?.token || responseBody?.data?.token;
+      const user = responseBody?.user || responseBody?.data?.user;
+      const authData: AuthResponse = { token, user };
 
-      this.saveSession(authData);
+      this.saveSession(responseBody);
       return authData;
     } catch (error) {
       // In development, if backend server is not running, provide fallback session so user can enter dashboard

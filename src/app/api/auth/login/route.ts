@@ -79,6 +79,8 @@ export async function POST(req: Request) {
       {
         success: true,
         message: "Login successful",
+        token,
+        user: userData,
         data: {
           token,
           user: userData,

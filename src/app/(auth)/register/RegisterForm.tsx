@@ -43,9 +43,14 @@ const RegisterForm = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      await authService.register(data);
-      toast.success(tAuth("registerSuccess"));
-      window.location.href = "/home";
+      const res = await authService.register(data);
+      if (res?.token) {
+        localStorage.setItem("auth_token", res.token);
+      }
+      toast.success(tAuth("registerSuccess") || "تم إنشاء الحساب بنجاح");
+      setTimeout(() => {
+        window.location.href = "/home";
+      }, 300);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const message =

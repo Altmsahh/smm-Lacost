@@ -40,9 +40,14 @@ const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await authService.login(data);
-      toast.success(tAuth("loginSuccess"));
-      window.location.href = "/home";
+      const res = await authService.login(data);
+      if (res?.token) {
+        localStorage.setItem("auth_token", res.token);
+      }
+      toast.success(tAuth("loginSuccess") || "تم تسجيل الدخول بنجاح");
+      setTimeout(() => {
+        window.location.href = "/home";
+      }, 300);
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         const message =
