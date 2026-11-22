@@ -4,33 +4,50 @@ import prisma from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
 import { loginSchema } from "@/lib/validators";
 
+// Helper to retry database queries if Neon serverless DB is waking up
+async function findUserWithRetry(identifier: string, retries = 2) {
+  try {
+    return await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email: identifier },
+          { username: identifier },
+        ],
+      },
+    });
+  } catch (err: any) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 1200));
+      return findUserWithRetry(identifier, retries - 1);
+    }
+    throw err;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const validation = loginSchema.safeParse(body);
+    const identifier = (body.email || body.username || "").trim().toLowerCase();
+    const password = body.password;
 
-    if (!validation.success) {
+    if (!identifier || !password) {
       return NextResponse.json(
         {
           success: false,
-          message: validation.error.issues[0]?.message || "Invalid input data",
+          message: "يرجى إدخال اسم المستخدم أو البريد الإلكتروني وكلمة المرور",
         },
         { status: 400 }
       );
     }
 
-    const { email, password } = validation.data;
-
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
+    // Find user by email OR username with auto-retry
+    const user = await findUserWithRetry(identifier);
 
     if (!user) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid email or password",
+          message: "البريد الإلكتروني / اسم المستخدم أو كلمة المرور غير صحيحة",
         },
         { status: 401 }
       );
@@ -40,7 +57,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: `Your account is ${user.status}. Please contact support.`,
+          message: `حسابك ${user.status === "banned" ? "محظور" : "معلق"}. يرجى التواصل مع الدعم.`,
         },
         { status: 403 }
       );

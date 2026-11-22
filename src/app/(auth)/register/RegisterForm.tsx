@@ -44,9 +44,10 @@ const RegisterForm = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: data.username,
-          email: data.email,
+          username: data.username.trim(),
+          email: data.email.trim(),
           password: data.password,
+          confirmPassword: data.confirmPassword,
         }),
       });
       const json = await rawRes.json();

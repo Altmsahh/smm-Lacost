@@ -4,6 +4,26 @@ import prisma from "@/lib/prisma";
 import { signToken } from "@/lib/jwt";
 import { registerSchema } from "@/lib/validators";
 
+// Helper to check user existence with retry for Neon serverless wakeups
+async function findExistingUserWithRetry(email: string, username: string, retries = 2) {
+  try {
+    return await prisma.user.findFirst({
+      where: {
+        OR: [
+          { email },
+          { username },
+        ],
+      },
+    });
+  } catch (err: any) {
+    if (retries > 0) {
+      await new Promise((r) => setTimeout(r, 1200));
+      return findExistingUserWithRetry(email, username, retries - 1);
+    }
+    throw err;
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -13,7 +33,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: validation.error.issues[0]?.message || "Invalid input data",
+          message: validation.error.issues[0]?.message || "بيانات الإدخال غير صالحة",
           errors: validation.error.format(),
         },
         { status: 400 }
@@ -21,25 +41,20 @@ export async function POST(req: Request) {
     }
 
     const { username, email, password } = validation.data;
+    const cleanUsername = username.toLowerCase().trim();
+    const cleanEmail = email.toLowerCase().trim();
 
-    // Check if email or username already taken
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: email.toLowerCase() },
-          { username: username.toLowerCase() },
-        ],
-      },
-    });
+    // Check if email or username already taken with auto-retry
+    const existingUser = await findExistingUserWithRetry(cleanEmail, cleanUsername);
 
     if (existingUser) {
-      const isEmail = existingUser.email.toLowerCase() === email.toLowerCase();
+      const isEmail = existingUser.email.toLowerCase() === email.toLowerCase().trim();
       return NextResponse.json(
         {
           success: false,
           message: isEmail
-            ? "Email already registered"
-            : "Username is already taken",
+            ? "البريد الإلكتروني مسجل بالفعل"
+            : "اسم المستخدم مأخوذ بالفعل، يرجى اختيار اسم آخر",
         },
         { status: 409 }
       );
@@ -51,8 +66,8 @@ export async function POST(req: Request) {
     // Create user in PostgreSQL
     const newUser = await prisma.user.create({
       data: {
-        username: username.toLowerCase(),
-        email: email.toLowerCase(),
+        username: username.toLowerCase().trim(),
+        email: email.toLowerCase().trim(),
         password: hashedPassword,
         balance: 0.0,
         role: "user",

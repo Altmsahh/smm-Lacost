@@ -36,11 +36,13 @@ const LoginForm = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      // Call login API directly with fetch to avoid any axios wrapping issues
       const rawRes = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          email: data.email.trim(),
+          password: data.password,
+        }),
       });
       const json = await rawRes.json();
 
@@ -54,7 +56,6 @@ const LoginForm = () => {
 
       if (token) {
         localStorage.setItem("auth_token", token);
-        // Set cookie manually for middleware
         const isHttps = window.location.protocol === "https:";
         const secureAttr = isHttps ? "; Secure" : "";
         document.cookie = `auth_token=${token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
@@ -65,7 +66,6 @@ const LoginForm = () => {
       }
 
       toast.success(tAuth("loginSuccess") || "تم تسجيل الدخول بنجاح");
-      // Use window.location for full page navigation to ensure cookies/localStorage are available
       window.location.href = "/home";
     } catch (error: unknown) {
       console.error("Login form error:", error);
@@ -84,10 +84,10 @@ const LoginForm = () => {
         <p className="text-sm text-gray-400 mt-0.5">{tAuth("loginSubtitle")}</p>
       </div>
 
-      {/* Email Field */}
+      {/* Email / Username Field */}
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium text-gray-300 text-start">
-          {tAuth("email")}
+          اسم المستخدم أو البريد الإلكتروني
         </label>
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 start-0 flex items-center ps-3.5 text-gray-500">
@@ -95,9 +95,9 @@ const LoginForm = () => {
           </div>
           <input
             id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="name@example.com"
+            type="text"
+            autoComplete="username email"
+            placeholder="اسم المستخدم أو name@example.com"
             disabled={isSubmitting}
             {...register("email")}
             className={`w-full rounded-xl border bg-zinc-900 py-2.5 ps-10 pe-3.5 text-sm text-white placeholder-gray-500 outline-none transition-colors focus:ring-2 focus:ring-gray-500/50 ${
