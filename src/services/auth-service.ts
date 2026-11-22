@@ -123,7 +123,30 @@ export const authService = {
     if (typeof window === "undefined") return null;
     try {
       const userStr = localStorage.getItem("auth_user");
-      return userStr ? (JSON.parse(userStr) as User) : null;
+      if (userStr) {
+        const u = JSON.parse(userStr);
+        if (u && (u.username || u.email)) return u as User;
+      }
+      // Fallback: decode directly from JWT token
+      const token = localStorage.getItem("auth_token");
+      if (token) {
+        const parts = token.split(".");
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          if (payload?.username) {
+            return {
+              id: payload.userId || "",
+              username: payload.username,
+              email: payload.email || "",
+              balance: 0,
+              role: payload.role || "user",
+              status: "active",
+              createdAt: "",
+            };
+          }
+        }
+      }
+      return null;
     } catch {
       return null;
     }
@@ -131,12 +154,20 @@ export const authService = {
 
   async getProfile(): Promise<User | null> {
     try {
-      const response = await apiClient.get<ApiResponse<User>>("/auth/me");
-      const user = response.data?.data || (response.data as unknown as User);
-      if (user && typeof window !== "undefined") {
+      const token =
+        typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
+      if (!token) return this.getCurrentUser();
+
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      const user = json?.data || json?.user;
+      if (user && user.username && typeof window !== "undefined") {
         localStorage.setItem("auth_user", JSON.stringify(user));
+        return user;
       }
-      return user;
+      return this.getCurrentUser();
     } catch {
       return this.getCurrentUser();
     }

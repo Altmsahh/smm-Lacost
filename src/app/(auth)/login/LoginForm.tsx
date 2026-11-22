@@ -44,6 +44,9 @@ const LoginForm = () => {
       if (res?.token) {
         localStorage.setItem("auth_token", res.token);
       }
+      if (res?.user) {
+        localStorage.setItem("auth_user", JSON.stringify(res.user));
+      }
       toast.success(tAuth("loginSuccess") || "تم تسجيل الدخول بنجاح");
       setTimeout(() => {
         window.location.href = "/home";

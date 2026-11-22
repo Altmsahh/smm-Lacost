@@ -53,7 +53,8 @@ export default function HomePage() {
   const [loadingStats, setLoadingStats] = useState(true);
   const { formatAmount } = useCurrency();
 
-  const displayName = user?.username || (user?.email ? user.email.split("@")[0] : "");
+  const currentUser = user || (typeof window !== "undefined" ? authService.getCurrentUser() : null);
+  const displayName = currentUser?.username || (currentUser?.email ? currentUser.email.split("@")[0] : "");
 
   useEffect(() => {
     const cached = authService.getCurrentUser();

@@ -4,6 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "smm-lacost-secret-key-123456";
 
 export interface JwtPayload {
   userId: string;
+  username?: string;
   email: string;
   role: string;
 }

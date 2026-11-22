@@ -47,6 +47,9 @@ const RegisterForm = () => {
       if (res?.token) {
         localStorage.setItem("auth_token", res.token);
       }
+      if (res?.user) {
+        localStorage.setItem("auth_user", JSON.stringify(res.user));
+      }
       toast.success(tAuth("registerSuccess") || "تم إنشاء الحساب بنجاح");
       setTimeout(() => {
         window.location.href = "/home";
