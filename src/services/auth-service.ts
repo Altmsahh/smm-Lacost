@@ -6,8 +6,10 @@ export const authService = {
   saveSession(authData: AuthResponse): void {
     if (authData?.token && typeof window !== "undefined") {
       localStorage.setItem("auth_token", authData.token);
-      document.cookie = `auth_token=${authData.token}; path=/; max-age=604800; SameSite=Lax`;
-      document.cookie = `token=${authData.token}; path=/; max-age=604800; SameSite=Lax`;
+      const isHttps = window.location.protocol === "https:";
+      const secureAttr = isHttps ? "; Secure" : "";
+      document.cookie = `auth_token=${authData.token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
+      document.cookie = `token=${authData.token}; path=/; max-age=604800; SameSite=Lax${secureAttr}`;
       if (authData.user) {
         localStorage.setItem("auth_user", JSON.stringify(authData.user));
       }

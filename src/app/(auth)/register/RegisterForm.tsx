@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -20,6 +20,12 @@ const RegisterForm = () => {
   const tNav = useTranslations("nav");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      window.location.href = "/home";
+    }
+  }, []);
 
   const {
     register,
