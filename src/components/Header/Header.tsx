@@ -26,9 +26,9 @@ function Header() {
           </span>
         </Link>
 
-        <nav className="flex items-center gap-3 sm:gap-5">
-          {/* Currency and Language Switcher Side-by-Side in Navbar */}
-          <div className="flex items-center gap-2">
+        <nav className="flex items-center gap-2 sm:gap-5">
+          {/* Currency and Language Switcher Side-by-Side in Navbar (Desktop) */}
+          <div className="hidden sm:flex items-center gap-2">
             <CurrencySwitcher compact />
             <LanguageSwitcher />
           </div>
@@ -44,10 +44,16 @@ function Header() {
           <Link className="text-sm font-medium text-gray-400 hover:text-white transition-colors" href="/login">
             دخول
           </Link>
-          <Link href="/register" className="text-sm font-extrabold px-4 py-1.5 rounded-xl bg-[#00df82] hover:bg-[#10e57a] text-black transition-all shadow-md shadow-[#00df82]/25">
+          <Link href="/register" className="text-xs sm:text-sm font-extrabold px-3 sm:px-4 py-1.5 rounded-xl bg-[#00df82] hover:bg-[#10e57a] text-black transition-all shadow-md shadow-[#00df82]/25">
             إنشاء حساب
           </Link>
         </nav>
+      </div>
+
+      {/* Mobile Sub-Bar for Currency & Language */}
+      <div className="sm:hidden flex items-center justify-between px-4 py-2 border-t border-zinc-800/60 bg-zinc-950/95">
+        <CurrencySwitcher compact />
+        <LanguageSwitcher />
       </div>
     </header>
   );
